@@ -147,6 +147,9 @@ class CSRFAnalyzer extends SecurityAnalyzer
         })->filter(function ($route) {
             // Exclude the routes that are API routes (do not need CSRF protection)
             return ! Str::is('/api/*', $route->uri());
+        })->filter(function ($route) {
+            // Ignore Laravel auto-registered storage routes
+            return ! Str::startsWith($route->getName() ?? '', 'storage.local.');
         })->map(function ($route) {
             // Prettify unprotected routes to display in error message
             return '['.implode(',', $route->methods()).'] '.$route->uri();
