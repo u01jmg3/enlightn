@@ -6,7 +6,7 @@ use Enlightn\Enlightn\Analyzers\Security\CSRFAnalyzer;
 use Enlightn\Enlightn\Tests\Analyzers\AnalyzerTestCase;
 use Enlightn\Enlightn\Tests\Analyzers\Concerns\InteractsWithMiddleware;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
 
 class CSRFAnalyzerTest extends AnalyzerTestCase
@@ -51,7 +51,7 @@ class CSRFAnalyzerTest extends AnalyzerTestCase
     {
         $this->clearMiddlewareGroups();
         $this->registerStatefulGlobalMiddleware();
-        $this->registerGroupMiddleware('web', AppVerifyCsrfToken::class);
+        $this->registerGroupMiddleware('web', AppPreventRequestForgery::class);
 
         $this->runEnlightn();
 
@@ -103,14 +103,14 @@ class CSRFAnalyzerTest extends AnalyzerTestCase
 
     protected function registerGlobalCsrfMiddleware()
     {
-        $this->app->make(Kernel::class)->pushMiddleware(AppVerifyCsrfToken::class);
+        $this->app->make(Kernel::class)->pushMiddleware(AppPreventRequestForgery::class);
     }
 
     protected function registerProtectedRoute()
     {
         Route::post('/i-am-secure', function () {
             return 'Go away CSRF attacker';
-        })->middleware(AppVerifyCsrfToken::class);
+        })->middleware(AppPreventRequestForgery::class);
     }
 
     protected function registerUnprotectedRoute()
@@ -121,6 +121,6 @@ class CSRFAnalyzerTest extends AnalyzerTestCase
     }
 }
 
-class AppVerifyCsrfToken extends VerifyCsrfToken
+class AppPreventRequestForgery extends PreventRequestForgery
 {
 }

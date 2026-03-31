@@ -4,7 +4,7 @@ namespace Enlightn\Enlightn\Analyzers\Security;
 
 use Enlightn\Enlightn\Analyzers\Concerns\AnalyzesMiddleware;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
 
@@ -103,9 +103,9 @@ class CSRFAnalyzer extends SecurityAnalyzer
     {
         if (isset($this->kernel->getMiddlewareGroups()['web'])) {
             if (collect($this->kernel->getMiddlewareGroups()['web'])->contains(function ($middleware) {
-                return is_subclass_of($middleware, VerifyCsrfToken::class);
+                return is_subclass_of($middleware, PreventRequestForgery::class);
             })) {
-                // Analysis passed as the web middleware group has the VerifyCsrfToken middleware
+                // Analysis passed as the web middleware group has the PreventRequestForgery middleware
                 return true;
             }
         }
@@ -121,8 +121,8 @@ class CSRFAnalyzer extends SecurityAnalyzer
      */
     protected function appIsGloballyProtected()
     {
-        if ($this->appUsesGlobalMiddleware(VerifyCsrfToken::class)) {
-            // Analysis passed as the VerifyCsrfToken middleware is global
+        if ($this->appUsesGlobalMiddleware(PreventRequestForgery::class)) {
+            // Analysis passed as the PreventRequestForgery middleware is global
             return true;
         }
 
@@ -142,8 +142,8 @@ class CSRFAnalyzer extends SecurityAnalyzer
                 return ! in_array($method, ['HEAD', 'GET', 'OPTIONS']);
             });
         })->filter(function ($route) {
-            // Get the routes that don't apply the VerifyCsrfToken middleware
-            return ! $this->routeUsesMiddleware($route, VerifyCsrfToken::class);
+            // Get the routes that don't apply the PreventRequestForgery middleware
+            return ! $this->routeUsesMiddleware($route, PreventRequestForgery::class);
         })->filter(function ($route) {
             // Exclude the routes that are API routes (do not need CSRF protection)
             return ! Str::is('/api/*', $route->uri());
